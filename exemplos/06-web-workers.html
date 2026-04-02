@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 6 - Web Workers</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+        h1 { color: #26c6da; margin-bottom: 0.5rem; }
+        p.desc { color: #aaa; margin-bottom: 1.5rem; text-align: center; max-width: 650px; }
+        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 2rem; width: 100%; max-width: 800px; margin-bottom: 1.5rem; }
+        a.voltar { color: #26c6da; text-decoration: none; margin-bottom: 1rem; }
+        a.voltar:hover { text-decoration: underline; }
+        button { border: none; padding: 0.7rem 1.4rem; border-radius: 8px; font-size: 0.9rem; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-worker { background: #26c6da; color: #000; }
+        .btn-worker:hover { background: #00acc1; }
+        .btn-main { background: #ef5350; color: #fff; }
+        .btn-main:hover { background: #c62828; }
+        .btn-secondary { background: #333; color: #ccc; }
+        .btn-secondary:hover { background: #444; }
+
+        .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 600px) { .compare { grid-template-columns: 1fr; } }
+        .compare-box { background: #111; border-radius: 10px; padding: 1.25rem; border: 2px solid transparent; }
+        .compare-box.main-thread { border-color: #ef5350; }
+        .compare-box.worker-thread { border-color: #26c6da; }
+        .compare-box h3 { margin-bottom: 0.75rem; font-size: 0.95rem; }
+        .compare-box h3.red { color: #ef5350; }
+        .compare-box h3.cyan { color: #26c6da; }
+
+        .resultado { background: #0a0a0a; padding: 0.75rem; border-radius: 6px; font-family: monospace; font-size: 0.85rem; min-height: 40px; margin-top: 0.5rem; }
+        .ok { color: #66bb6a; }
+        .erro { color: #ef5350; }
+        .info { color: #ffa726; }
+
+        /* Animação de teste */
+        .animation-test { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; padding: 1rem; background: #111; border-radius: 8px; }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid #333;
+            border-top: 4px solid #26c6da;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .pulse-bar {
+            flex: 1; height: 20px; background: linear-gradient(90deg, #26c6da, #ec407a, #ffa726, #26c6da);
+            background-size: 200% 100%;
+            animation: gradient 1.5s ease infinite;
+            border-radius: 10px;
+        }
+        @keyframes gradient { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+        /* Progresso */
+        .progress-bar { width: 100%; height: 24px; background: #111; border-radius: 12px; overflow: hidden; margin-top: 0.75rem; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #26c6da, #66bb6a); border-radius: 12px; transition: width 0.1s; width: 0%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #000; }
+
+        .row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+    </style>
+</head>
+<body>
+    <a class="voltar" href="index.html">← Voltar ao índice</a>
+    <h1>⚙️ Web Workers API</h1>
+    <p class="desc">Executa scripts JavaScript em threads separadas (background), evitando que cálculos pesados travem a interface do usuário.</p>
+
+    <!-- Teste de animação (prova visual de que a UI não travou) -->
+    <div class="card">
+        <h2 style="color:#26c6da; margin-bottom:0.75rem;">Teste Visual — A interface está responsiva?</h2>
+        <p style="color:#888; font-size:0.85rem;">Se a animação abaixo parar, a thread principal está bloqueada. Com Web Workers, ela continua rodando!</p>
+        <div class="animation-test">
+            <div class="spinner"></div>
+            <div class="pulse-bar"></div>
+        </div>
+    </div>
+
+    <!-- Comparação: Main Thread vs Worker -->
+    <div class="card">
+        <h2 style="color:#26c6da; margin-bottom:0.5rem;">Comparação: Thread Principal vs Web Worker</h2>
+        <p style="color:#888; font-size:0.85rem; margin-bottom:0.5rem;">Calcular Fibonacci(42) — observe a animação acima durante cada teste.</p>
+
+        <div class="compare">
+            <div class="compare-box main-thread">
+                <h3 class="red">❌ Thread Principal (vai travar!)</h3>
+                <p style="color:#999; font-size:0.8rem;">O cálculo roda na mesma thread da UI. Animação para.</p>
+                <button class="btn-main" onclick="calcMainThread()" id="btnMain">Calcular na Main Thread</button>
+                <div class="resultado" id="resMain"><span class="info">Aguardando...</span></div>
+            </div>
+            <div class="compare-box worker-thread">
+                <h3 class="cyan">✔ Web Worker (não trava!)</h3>
+                <p style="color:#999; font-size:0.8rem;">O cálculo roda em background. Animação continua fluida.</p>
+                <button class="btn-worker" onclick="calcWorker()" id="btnWorker">Calcular com Worker</button>
+                <div class="resultado" id="resWorker"><span class="info">Aguardando...</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mais testes com Worker -->
+    <div class="card">
+        <h2 style="color:#26c6da; margin-bottom:1rem;">Outros Testes com Web Worker</h2>
+
+        <div style="margin-bottom:1.5rem;">
+            <h3 style="color:#ffa726; margin-bottom:0.5rem;">🔢 Encontrar Números Primos</h3>
+            <div class="row">
+                <button class="btn-worker" onclick="testePrimos(1000000)">Até 1 milhão</button>
+                <button class="btn-worker" onclick="testePrimos(5000000)">Até 5 milhões</button>
+                <button class="btn-worker" onclick="testePrimos(10000000)">Até 10 milhões</button>
+            </div>
+            <div class="resultado" id="resPrimos"><span class="info">Aguardando...</span></div>
+        </div>
+
+        <div style="margin-bottom:1.5rem;">
+            <h3 style="color:#ffa726; margin-bottom:0.5rem;">📊 Ordenação Pesada (Bubble Sort)</h3>
+            <div class="row">
+                <button class="btn-worker" onclick="testeOrdenar(10000)">10 mil</button>
+                <button class="btn-worker" onclick="testeOrdenar(20000)">20 mil</button>
+                <button class="btn-worker" onclick="testeOrdenar(50000)">50 mil itens</button>
+            </div>
+            <div class="resultado" id="resOrdenar"><span class="info">Aguardando...</span></div>
+        </div>
+
+        <div>
+            <h3 style="color:#ffa726; margin-bottom:0.5rem;">📈 Tarefa com Progresso</h3>
+            <button class="btn-worker" onclick="testeProgresso()" id="btnProgresso">Iniciar Tarefa Longa</button>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+            <div class="resultado" id="resProgresso"><span class="info">Aguardando...</span></div>
+        </div>
+    </div>
+
+    <!-- Código-fonte -->
+    <div class="card">
+        <h3 style="color:#26c6da; margin-bottom:1rem;">Código-fonte</h3>
+        <pre style="background:#111; padding:1rem; border-radius:8px; overflow-x:auto; font-size:0.85rem; color:#ccc;">
+// === Página principal ===
+
+// 1. Criar o worker
+const worker = new Worker("worker.js");
+
+// 2. Enviar mensagem para o worker
+worker.postMessage({ tipo: "fibonacci", dados: 42 });
+
+// 3. Receber resultado do worker
+worker.onmessage = (event) => {
+  console.log("Resultado:", event.data);
+};
+
+// === Arquivo worker.js (thread separada) ===
+
+self.onmessage = function (e) {
+  const n = e.data.dados;
+  const resultado = fibonacci(n);
+  self.postMessage({ resultado });
+};
+
+function fibonacci(n) {
+  if (n &lt;= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+        </pre>
+    </div>
+
+    <script>
+        let worker = null;
+
+        function criarWorker() {
+            if (worker) worker.terminate();
+            worker = new Worker('worker.js');
+
+            worker.onmessage = function (e) {
+                const d = e.data;
+
+                if (d.tipo === 'fibonacci') {
+                    document.getElementById('resWorker').innerHTML =
+                        `<span class="ok">✔ fibonacci(${d.n}) = ${d.resultado}</span>\nTempo: ${d.tempo}ms — UI não travou!`;
+                    document.getElementById('btnWorker').disabled = false;
+                }
+
+                if (d.tipo === 'primos') {
+                    document.getElementById('resPrimos').innerHTML =
+                        `<span class="ok">✔ ${d.quantidade.toLocaleString('pt-BR')} primos encontrados até ${d.limite.toLocaleString('pt-BR')}</span>\nTempo: ${d.tempo}ms`;
+                }
+
+                if (d.tipo === 'ordenar') {
+                    document.getElementById('resOrdenar').innerHTML =
+                        `<span class="ok">✔ ${d.tamanho.toLocaleString('pt-BR')} itens ordenados</span>\nTempo: ${d.tempo}ms`;
+                }
+
+                if (d.tipo === 'progresso') {
+                    const fill = document.getElementById('progressFill');
+                    fill.style.width = d.percentual + '%';
+                    fill.textContent = d.percentual + '%';
+                    document.getElementById('resProgresso').innerHTML =
+                        `<span class="info">Processando: ${d.atual}/${d.total}</span>`;
+                }
+
+                if (d.tipo === 'progresso-fim') {
+                    document.getElementById('resProgresso').innerHTML =
+                        `<span class="ok">✔ Tarefa concluída! A animação continuou fluida.</span>`;
+                    document.getElementById('btnProgresso').disabled = false;
+                }
+            };
+
+            worker.onerror = function (e) {
+                console.error('Worker error:', e);
+            };
+        }
+
+        criarWorker();
+
+        // Main thread (vai travar!)
+        function calcMainThread() {
+            const btn = document.getElementById('btnMain');
+            const res = document.getElementById('resMain');
+            btn.disabled = true;
+            res.innerHTML = '<span class="erro">⏳ Calculando... (UI vai congelar!)</span>';
+
+            // Pequeno delay para mostrar a mensagem antes de travar
+            setTimeout(() => {
+                const inicio = performance.now();
+                const resultado = fibonacciLocal(42);
+                const tempo = (performance.now() - inicio).toFixed(2);
+                res.innerHTML = `<span class="erro">❌ fibonacci(42) = ${resultado}</span>\nTempo: ${tempo}ms — UI TRAVOU durante o cálculo!`;
+                btn.disabled = false;
+            }, 50);
+        }
+
+        function fibonacciLocal(n) {
+            if (n <= 1) return n;
+            return fibonacciLocal(n - 1) + fibonacciLocal(n - 2);
+        }
+
+        // Worker (não trava!)
+        function calcWorker() {
+            const btn = document.getElementById('btnWorker');
+            const res = document.getElementById('resWorker');
+            btn.disabled = true;
+            res.innerHTML = '<span class="info">⏳ Calculando em background...</span>';
+            worker.postMessage({ tipo: 'fibonacci', dados: 42 });
+        }
+
+        function testePrimos(limite) {
+            document.getElementById('resPrimos').innerHTML = '<span class="info">⏳ Buscando primos...</span>';
+            worker.postMessage({ tipo: 'primos', dados: limite });
+        }
+
+        function testeOrdenar(tamanho) {
+            document.getElementById('resOrdenar').innerHTML = '<span class="info">⏳ Ordenando em background...</span>';
+            worker.postMessage({ tipo: 'ordenar', dados: tamanho });
+        }
+
+        function testeProgresso() {
+            document.getElementById('btnProgresso').disabled = true;
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressFill').textContent = '0%';
+            document.getElementById('resProgresso').innerHTML = '<span class="info">⏳ Iniciando...</span>';
+            worker.postMessage({ tipo: 'progresso', dados: 500 });
+        }
+    </script>
+</body>
+</html>

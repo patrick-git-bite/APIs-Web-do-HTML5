@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 2 - Web Storage</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+        h1 { color: #ab47bc; margin-bottom: 0.5rem; }
+        p.desc { color: #aaa; margin-bottom: 1.5rem; text-align: center; max-width: 600px; }
+        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 2rem; width: 100%; max-width: 750px; margin-bottom: 1.5rem; }
+        .card h2 { margin-bottom: 1rem; font-size: 1.1rem; }
+        .card h2.local { color: #66bb6a; }
+        .card h2.session { color: #ffa726; }
+        .row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+        input[type="text"] { background: #111; border: 1px solid #444; color: #fff; padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.95rem; flex: 1; min-width: 120px; }
+        button { border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.9rem; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+        .btn-local { background: #66bb6a; color: #000; }
+        .btn-local:hover { background: #43a047; }
+        .btn-session { background: #ffa726; color: #000; }
+        .btn-session:hover { background: #fb8c00; }
+        .btn-danger { background: #ef5350; color: #fff; }
+        .btn-danger:hover { background: #c62828; }
+        .storage-view { background: #111; border-radius: 8px; padding: 1rem; margin-top: 0.75rem; font-family: monospace; font-size: 0.85rem; min-height: 50px; max-height: 200px; overflow-y: auto; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin-right: 4px; }
+        .badge-key { background: #333; color: #4fc3f7; }
+        .badge-val { background: #1a1a2e; color: #e0e0e0; }
+        .item-row { padding: 4px 0; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        .item-row:last-child { border-bottom: none; }
+        .delete-item { background: none; border: none; color: #ef5350; cursor: pointer; font-size: 1rem; padding: 0 4px; }
+        .empty { color: #666; font-style: italic; }
+        .demo-section { margin-top: 1rem; padding: 1rem; background: #162016; border: 1px solid #2e7d32; border-radius: 8px; }
+        .demo-section h3 { color: #66bb6a; margin-bottom: 0.75rem; font-size: 0.95rem; }
+        a.voltar { color: #ab47bc; text-decoration: none; margin-bottom: 1rem; }
+        a.voltar:hover { text-decoration: underline; }
+        .theme-toggle { margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <a class="voltar" href="index.html">← Voltar ao índice</a>
+    <h1>💾 Web Storage API</h1>
+    <p class="desc">Armazena dados no navegador do cliente. <strong>localStorage</strong> persiste mesmo após fechar o navegador. <strong>sessionStorage</strong> dura apenas enquanto a aba estiver aberta.</p>
+
+    <!-- localStorage -->
+    <div class="card">
+        <h2 class="local">🟢 localStorage (persistente)</h2>
+        <div class="row">
+            <input type="text" id="localKey" placeholder="Chave">
+            <input type="text" id="localVal" placeholder="Valor">
+            <button class="btn-local" onclick="salvarLocal()">Salvar</button>
+        </div>
+        <div class="row">
+            <input type="text" id="localGetKey" placeholder="Buscar por chave" style="flex:2;">
+            <button class="btn-local" onclick="buscarLocal()">Buscar</button>
+        </div>
+        <div id="localGetResult" style="color:#66bb6a; min-height: 1.5rem; font-family: monospace;"></div>
+        <div class="storage-view" id="localView"></div>
+        <div class="row" style="margin-top: 0.75rem;">
+            <button class="btn-danger" onclick="limparLocal()">🗑 Limpar Tudo</button>
+        </div>
+
+        <div class="demo-section">
+            <h3>Demo prática: Salvar seu nome</h3>
+            <p style="color:#aaa; font-size:0.85rem; margin-bottom:0.5rem;">Digite seu nome abaixo. Ele será salvo no localStorage. Feche a aba e reabra — seu nome continuará aqui!</p>
+            <div class="row">
+                <input type="text" id="nomeUsuario" placeholder="Seu nome">
+                <button class="btn-local" onclick="salvarNome()">Salvar Nome</button>
+            </div>
+            <div id="saudacao" style="margin-top: 0.5rem; color: #66bb6a; font-size: 1.1rem;"></div>
+        </div>
+    </div>
+
+    <!-- sessionStorage -->
+    <div class="card">
+        <h2 class="session">🟠 sessionStorage (temporário)</h2>
+        <div class="row">
+            <input type="text" id="sessKey" placeholder="Chave">
+            <input type="text" id="sessVal" placeholder="Valor">
+            <button class="btn-session" onclick="salvarSession()">Salvar</button>
+        </div>
+        <div class="storage-view" id="sessView"></div>
+        <div class="row" style="margin-top: 0.75rem;">
+            <button class="btn-danger" onclick="limparSession()">🗑 Limpar Tudo</button>
+        </div>
+        <p style="color:#aaa; font-size:0.8rem; margin-top:0.5rem;">⚠️ Feche esta aba e reabra a página — os dados do sessionStorage terão desaparecido.</p>
+    </div>
+
+    <!-- Código fonte -->
+    <div class="card">
+        <h3 style="color:#ab47bc; margin-bottom:1rem;">Código-fonte</h3>
+        <pre style="background:#111; padding:1rem; border-radius:8px; overflow-x:auto; font-size:0.85rem; color:#ccc;">
+// === localStorage (persistente) ===
+localStorage.setItem("nome", "Patrick");
+localStorage.getItem("nome");       // → "Patrick"
+localStorage.removeItem("nome");
+localStorage.clear();                // remove tudo
+
+// === sessionStorage (temporário) ===
+sessionStorage.setItem("etapa", "3");
+sessionStorage.getItem("etapa");     // → "3"
+sessionStorage.removeItem("etapa");
+sessionStorage.clear();
+        </pre>
+    </div>
+
+    <script>
+        // --- localStorage ---
+        function salvarLocal() {
+            const key = document.getElementById('localKey').value.trim();
+            const val = document.getElementById('localVal').value.trim();
+            if (!key) return alert('Informe uma chave!');
+            localStorage.setItem(key, val);
+            document.getElementById('localKey').value = '';
+            document.getElementById('localVal').value = '';
+            atualizarViews();
+        }
+
+        function buscarLocal() {
+            const key = document.getElementById('localGetKey').value.trim();
+            if (!key) return;
+            const val = localStorage.getItem(key);
+            const el = document.getElementById('localGetResult');
+            el.textContent = val !== null ? `"${key}" → "${val}"` : `"${key}" não encontrado.`;
+        }
+
+        function limparLocal() {
+            localStorage.clear();
+            document.getElementById('localGetResult').textContent = '';
+            atualizarViews();
+            verificarNome();
+        }
+
+        function salvarNome() {
+            const nome = document.getElementById('nomeUsuario').value.trim();
+            if (!nome) return;
+            localStorage.setItem('_demo_nome', nome);
+            document.getElementById('nomeUsuario').value = '';
+            verificarNome();
+            atualizarViews();
+        }
+
+        function verificarNome() {
+            const nome = localStorage.getItem('_demo_nome');
+            const el = document.getElementById('saudacao');
+            el.textContent = nome ? `👋 Olá, ${nome}! (salvo no localStorage)` : '';
+        }
+
+        // --- sessionStorage ---
+        function salvarSession() {
+            const key = document.getElementById('sessKey').value.trim();
+            const val = document.getElementById('sessVal').value.trim();
+            if (!key) return alert('Informe uma chave!');
+            sessionStorage.setItem(key, val);
+            document.getElementById('sessKey').value = '';
+            document.getElementById('sessVal').value = '';
+            atualizarViews();
+        }
+
+        function limparSession() {
+            sessionStorage.clear();
+            atualizarViews();
+        }
+
+        // --- Views ---
+        function renderStorage(storage, containerId) {
+            const el = document.getElementById(containerId);
+            if (storage.length === 0) {
+                el.innerHTML = '<span class="empty">Vazio</span>';
+                return;
+            }
+            let html = '';
+            for (let i = 0; i < storage.length; i++) {
+                const key = storage.key(i);
+                const val = storage.getItem(key);
+                html += `<div class="item-row">
+                    <span><span class="badge badge-key">${escapeHtml(key)}</span> → <span class="badge badge-val">${escapeHtml(val)}</span></span>
+                    <button class="delete-item" onclick="${containerId === 'localView' ? 'localStorage' : 'sessionStorage'}.removeItem('${escapeHtml(key)}'); atualizarViews();" title="Remover">✕</button>
+                </div>`;
+            }
+            el.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(text));
+            return div.innerHTML;
+        }
+
+        function atualizarViews() {
+            renderStorage(localStorage, 'localView');
+            renderStorage(sessionStorage, 'sessView');
+        }
+
+        // Init
+        atualizarViews();
+        verificarNome();
+    </script>
+</body>
+</html>

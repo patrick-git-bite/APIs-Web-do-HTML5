@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 5 - Notification</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+        h1 { color: #ec407a; margin-bottom: 0.5rem; }
+        p.desc { color: #aaa; margin-bottom: 1.5rem; text-align: center; max-width: 600px; }
+        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 2rem; width: 100%; max-width: 700px; margin-bottom: 1.5rem; }
+        a.voltar { color: #ec407a; text-decoration: none; margin-bottom: 1rem; }
+        a.voltar:hover { text-decoration: underline; }
+        button { border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 0.95rem; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .btn-primary { background: #ec407a; color: #fff; }
+        .btn-primary:hover { background: #c2185b; }
+        .btn-secondary { background: #333; color: #ccc; }
+        .btn-secondary:hover { background: #444; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .status-bar { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: #111; border-radius: 8px; margin-bottom: 1.5rem; }
+        .status-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .status-granted { background: #66bb6a; }
+        .status-denied { background: #ef5350; }
+        .status-default { background: #ffa726; }
+        .status-text { font-size: 0.9rem; }
+
+        .notif-form { display: flex; flex-direction: column; gap: 0.75rem; }
+        .notif-form label { color: #aaa; font-size: 0.85rem; }
+        .notif-form input, .notif-form textarea {
+            background: #111; border: 1px solid #444; color: #fff;
+            padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.9rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .notif-form textarea { resize: vertical; min-height: 60px; }
+        .row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+        .notif-preview {
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-top: 1rem;
+        }
+        .notif-preview .icon { font-size: 2.5rem; }
+        .notif-preview .content .title { font-weight: 700; margin-bottom: 4px; }
+        .notif-preview .content .body { color: #aaa; font-size: 0.85rem; }
+        .notif-preview .content .origin { color: #666; font-size: 0.75rem; margin-top: 4px; }
+
+        .history { margin-top: 1rem; }
+        .history-item { background: #111; padding: 0.5rem 0.75rem; border-radius: 6px; margin-bottom: 4px; font-size: 0.8rem; display: flex; justify-content: space-between; }
+        .history-item .time { color: #666; }
+    </style>
+</head>
+<body>
+    <a class="voltar" href="index.html">← Voltar ao índice</a>
+    <h1>🔔 Notification API</h1>
+    <p class="desc">Envia notificações do sistema operacional diretamente do navegador. Requer permissão do usuário.</p>
+
+    <!-- Status da permissão -->
+    <div class="card">
+        <h2 style="color:#ec407a; margin-bottom:1rem;">1. Permissão</h2>
+        <div class="status-bar">
+            <div class="status-dot" id="statusDot"></div>
+            <span class="status-text" id="statusText"></span>
+        </div>
+        <button class="btn-primary" id="btnPermissao" onclick="pedirPermissao()">Solicitar Permissão</button>
+        <p style="color:#666; font-size:0.8rem; margin-top:0.75rem;">O navegador exibirá um popup pedindo autorização. Você pode alterar depois nas configurações do site.</p>
+    </div>
+
+    <!-- Enviar notificação -->
+    <div class="card">
+        <h2 style="color:#ec407a; margin-bottom:1rem;">2. Enviar Notificação</h2>
+        <div class="notif-form">
+            <div>
+                <label>Título</label>
+                <input type="text" id="notifTitulo" value="Olá, Patrick e Rafael!" style="width:100%;">
+            </div>
+            <div>
+                <label>Mensagem</label>
+                <textarea id="notifBody">Este é um exemplo da Notification API do HTML5! 🚀</textarea>
+            </div>
+            <div class="row">
+                <button class="btn-primary" onclick="enviarNotificacao()" id="btnEnviar">🔔 Enviar Notificação</button>
+                <button class="btn-secondary" onclick="enviarComDelay()">⏱️ Enviar em 3 segundos</button>
+            </div>
+        </div>
+
+        <div class="notif-preview" id="preview">
+            <div class="icon">🔔</div>
+            <div class="content">
+                <div class="title" id="prevTitulo">Olá, Patrick e Rafael!</div>
+                <div class="body" id="prevBody">Este é um exemplo da Notification API do HTML5! 🚀</div>
+                <div class="origin">localhost</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exemplos prontos -->
+    <div class="card">
+        <h2 style="color:#ec407a; margin-bottom:1rem;">3. Exemplos Rápidos</h2>
+        <div class="row" style="flex-wrap:wrap;">
+            <button class="btn-secondary" onclick="notifRapida('📧 Nova Mensagem', 'Você recebeu um e-mail de professor@uniftec.edu.br')">📧 E-mail</button>
+            <button class="btn-secondary" onclick="notifRapida('📅 Lembrete', 'Entrega do trabalho de Programação Web em 09/04!')">📅 Lembrete</button>
+            <button class="btn-secondary" onclick="notifRapida('✅ Download Concluído', 'O arquivo relatório.pdf foi baixado com sucesso.')">✅ Download</button>
+            <button class="btn-secondary" onclick="notifRapida('⚠️ Atenção', 'Sua sessão expira em 5 minutos.')">⚠️ Alerta</button>
+        </div>
+    </div>
+
+    <!-- Histórico -->
+    <div class="card">
+        <h2 style="color:#ec407a; margin-bottom:1rem;">📜 Histórico de Notificações</h2>
+        <div id="historico"><p style="color:#666; font-style:italic;">Nenhuma notificação enviada ainda.</p></div>
+    </div>
+
+    <!-- Código-fonte -->
+    <div class="card">
+        <h3 style="color:#ec407a; margin-bottom:1rem;">Código-fonte</h3>
+        <pre style="background:#111; padding:1rem; border-radius:8px; overflow-x:auto; font-size:0.85rem; color:#ccc;">
+// 1. Solicitar permissão
+Notification.requestPermission().then((permissao) => {
+  console.log("Permissão:", permissao);
+  // "granted", "denied" ou "default"
+});
+
+// 2. Criar e enviar notificação
+if (Notification.permission === "granted") {
+  const notif = new Notification("Título da Notificação", {
+    body: "Corpo da mensagem aqui.",
+    icon: "🔔"  // ou URL de uma imagem
+  });
+
+  // Eventos da notificação
+  notif.onclick = () => {
+    console.log("Usuário clicou na notificação!");
+    window.focus();
+  };
+
+  notif.onclose = () => {
+    console.log("Notificação fechada.");
+  };
+}
+        </pre>
+    </div>
+
+    <script>
+        let historicoNotifs = [];
+
+        function atualizarStatus() {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            const btn = document.getElementById('btnPermissao');
+
+            if (!('Notification' in window)) {
+                dot.className = 'status-dot status-denied';
+                text.textContent = 'Notification API não suportada neste navegador.';
+                btn.disabled = true;
+                return;
+            }
+
+            const perm = Notification.permission;
+            if (perm === 'granted') {
+                dot.className = 'status-dot status-granted';
+                text.innerHTML = 'Permissão <strong style="color:#66bb6a">CONCEDIDA</strong> — pronto para enviar notificações!';
+                btn.disabled = true;
+                btn.textContent = '✔ Permissão concedida';
+            } else if (perm === 'denied') {
+                dot.className = 'status-dot status-denied';
+                text.innerHTML = 'Permissão <strong style="color:#ef5350">NEGADA</strong> — altere nas configurações do navegador.';
+                btn.disabled = true;
+                btn.textContent = '✘ Permissão negada';
+            } else {
+                dot.className = 'status-dot status-default';
+                text.innerHTML = 'Permissão <strong style="color:#ffa726">PENDENTE</strong> — clique no botão para solicitar.';
+            }
+        }
+
+        function pedirPermissao() {
+            Notification.requestPermission().then(() => {
+                atualizarStatus();
+            });
+        }
+
+        function enviarNotificacao() {
+            const titulo = document.getElementById('notifTitulo').value || 'Notificação';
+            const body = document.getElementById('notifBody').value || '';
+
+            if (Notification.permission !== 'granted') {
+                alert('Você precisa conceder permissão primeiro!');
+                return;
+            }
+
+            const notif = new Notification(titulo, { body });
+
+            notif.onclick = () => {
+                window.focus();
+                addHistorico(titulo, body, 'clicada');
+            };
+
+            addHistorico(titulo, body, 'enviada');
+        }
+
+        function enviarComDelay() {
+            if (Notification.permission !== 'granted') {
+                alert('Você precisa conceder permissão primeiro!');
+                return;
+            }
+
+            const btn = document.querySelector('.btn-secondary');
+            let count = 3;
+            btn.disabled = true;
+            btn.textContent = `⏱️ ${count}...`;
+
+            const interval = setInterval(() => {
+                count--;
+                if (count <= 0) {
+                    clearInterval(interval);
+                    btn.textContent = '⏱️ Enviar em 3 segundos';
+                    btn.disabled = false;
+                    notifRapida('⏱️ Timer Finalizado', 'A notificação programada para 3 segundos foi disparada!');
+                } else {
+                    btn.textContent = `⏱️ ${count}...`;
+                }
+            }, 1000);
+        }
+
+        function notifRapida(titulo, body) {
+            if (Notification.permission !== 'granted') {
+                alert('Você precisa conceder permissão primeiro!');
+                return;
+            }
+            new Notification(titulo, { body });
+            addHistorico(titulo, body, 'enviada');
+        }
+
+        function addHistorico(titulo, body, status) {
+            historicoNotifs.unshift({ titulo, body, status, hora: new Date() });
+            renderHistorico();
+        }
+
+        function renderHistorico() {
+            const el = document.getElementById('historico');
+            if (historicoNotifs.length === 0) {
+                el.innerHTML = '<p style="color:#666; font-style:italic;">Nenhuma notificação enviada ainda.</p>';
+                return;
+            }
+            el.innerHTML = historicoNotifs.map(n =>
+                `<div class="history-item">
+                    <span>🔔 <strong>${escapeHtml(n.titulo)}</strong> — ${escapeHtml(n.body)} <em>(${n.status})</em></span>
+                    <span class="time">${n.hora.toLocaleTimeString('pt-BR')}</span>
+                </div>`
+            ).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(text));
+            return div.innerHTML;
+        }
+
+        // Preview em tempo real
+        document.getElementById('notifTitulo').addEventListener('input', (e) => {
+            document.getElementById('prevTitulo').textContent = e.target.value || 'Título';
+        });
+        document.getElementById('notifBody').addEventListener('input', (e) => {
+            document.getElementById('prevBody').textContent = e.target.value || 'Mensagem';
+        });
+
+        atualizarStatus();
+    </script>
+</body>
+</html>

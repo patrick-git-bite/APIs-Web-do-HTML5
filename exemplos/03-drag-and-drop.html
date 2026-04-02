@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 3 - Drag and Drop</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+        h1 { color: #ff7043; margin-bottom: 0.5rem; }
+        p.desc { color: #aaa; margin-bottom: 1.5rem; text-align: center; max-width: 600px; }
+        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 2rem; width: 100%; max-width: 800px; margin-bottom: 1.5rem; }
+        a.voltar { color: #ff7043; text-decoration: none; margin-bottom: 1rem; }
+        a.voltar:hover { text-decoration: underline; }
+
+        /* Kanban Board */
+        .kanban { display: flex; gap: 1rem; min-height: 350px; flex-wrap: wrap; }
+        .coluna { flex: 1; min-width: 200px; background: #111; border-radius: 10px; padding: 1rem; border: 2px dashed transparent; transition: border-color 0.2s, background 0.2s; }
+        .coluna.drag-over { border-color: #ff7043; background: #1a1210; }
+        .coluna h3 { text-align: center; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid #333; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        .col-todo h3 { color: #ef5350; }
+        .col-doing h3 { color: #ffa726; }
+        .col-done h3 { color: #66bb6a; }
+
+        .task {
+            background: #1e1e2e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            cursor: grab;
+            transition: transform 0.15s, opacity 0.15s, box-shadow 0.15s;
+            user-select: none;
+        }
+        .task:active { cursor: grabbing; }
+        .task.dragging { opacity: 0.4; transform: scale(0.95); }
+        .task:hover { box-shadow: 0 0 8px rgba(255, 112, 67, 0.3); }
+        .task .task-title { font-weight: 600; margin-bottom: 4px; }
+        .task .task-tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; display: inline-block; }
+        .tag-feature { background: #1a237e; color: #90caf9; }
+        .tag-bug { background: #4a1111; color: #ef9a9a; }
+        .tag-docs { background: #1b3a1b; color: #a5d6a7; }
+
+        .counter { text-align: center; font-size: 0.75rem; color: #666; margin-top: 0.5rem; }
+
+        /* File Drop Zone */
+        .drop-zone {
+            border: 2px dashed #444;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            color: #666;
+            transition: all 0.2s;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .drop-zone.active { border-color: #ff7043; color: #ff7043; background: #1a1210; }
+        .drop-zone p { font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .file-list { margin-top: 1rem; width: 100%; }
+        .file-item { background: #111; padding: 0.5rem 1rem; border-radius: 6px; margin-bottom: 4px; display: flex; justify-content: space-between; font-size: 0.85rem; }
+        .file-size { color: #888; }
+
+        button.reset { background: #333; color: #ccc; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; margin-top: 0.75rem; }
+        button.reset:hover { background: #444; }
+    </style>
+</head>
+<body>
+    <a class="voltar" href="index.html">← Voltar ao índice</a>
+    <h1>🖱️ Drag and Drop API</h1>
+    <p class="desc">Funcionalidade nativa do HTML5 para arrastar e soltar elementos. Basta usar <code>draggable="true"</code> e os eventos de drag.</p>
+
+    <!-- Kanban Board -->
+    <div class="card">
+        <h2 style="color:#ff7043; margin-bottom:1rem;">Quadro Kanban — Arraste as tarefas entre colunas</h2>
+        <div class="kanban">
+            <div class="coluna col-todo" id="todo" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragenter="onDragEnter(event)" ondragleave="onDragLeave(event)">
+                <h3>📋 A Fazer</h3>
+                <div class="task" draggable="true" ondragstart="onDragStart(event)" id="t1">
+                    <div class="task-title">Criar tela de login</div>
+                    <span class="task-tag tag-feature">Feature</span>
+                </div>
+                <div class="task" draggable="true" ondragstart="onDragStart(event)" id="t2">
+                    <div class="task-title">Corrigir bug no carrinho</div>
+                    <span class="task-tag tag-bug">Bug</span>
+                </div>
+                <div class="task" draggable="true" ondragstart="onDragStart(event)" id="t3">
+                    <div class="task-title">Documentar APIs</div>
+                    <span class="task-tag tag-docs">Docs</span>
+                </div>
+                <div class="task" draggable="true" ondragstart="onDragStart(event)" id="t4">
+                    <div class="task-title">Implementar dark mode</div>
+                    <span class="task-tag tag-feature">Feature</span>
+                </div>
+                <div class="counter" id="count-todo"></div>
+            </div>
+            <div class="coluna col-doing" id="doing" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragenter="onDragEnter(event)" ondragleave="onDragLeave(event)">
+                <h3>🔨 Fazendo</h3>
+                <div class="counter" id="count-doing"></div>
+            </div>
+            <div class="coluna col-done" id="done" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragenter="onDragEnter(event)" ondragleave="onDragLeave(event)">
+                <h3>✅ Feito</h3>
+                <div class="counter" id="count-done"></div>
+            </div>
+        </div>
+        <button class="reset" onclick="location.reload()">↻ Resetar quadro</button>
+    </div>
+
+    <!-- File Drop Zone -->
+    <div class="card">
+        <h2 style="color:#ff7043; margin-bottom:1rem;">Zona de Upload — Arraste arquivos do computador</h2>
+        <div class="drop-zone" id="dropZone">
+            <p>📁 Arraste arquivos aqui</p>
+            <span style="font-size:0.8rem;">(os arquivos NÃO são enviados a nenhum servidor)</span>
+        </div>
+        <div class="file-list" id="fileList"></div>
+    </div>
+
+    <!-- Código-fonte -->
+    <div class="card">
+        <h3 style="color:#ff7043; margin-bottom:1rem;">Código-fonte</h3>
+        <pre style="background:#111; padding:1rem; border-radius:8px; overflow-x:auto; font-size:0.85rem; color:#ccc;">
+&lt;div draggable="true" ondragstart="onDragStart(event)" id="task1"&gt;
+  Minha Tarefa
+&lt;/div&gt;
+
+&lt;div ondragover="onDragOver(event)" ondrop="onDrop(event)"&gt;
+  Zona de destino
+&lt;/div&gt;
+
+&lt;script&gt;
+function onDragStart(e) {
+  e.dataTransfer.setData("text/plain", e.target.id);
+}
+
+function onDragOver(e) {
+  e.preventDefault(); // necessário para permitir o drop
+}
+
+function onDrop(e) {
+  e.preventDefault();
+  const id = e.dataTransfer.getData("text/plain");
+  e.currentTarget.appendChild(document.getElementById(id));
+}
+&lt;/script&gt;
+        </pre>
+    </div>
+
+    <script>
+        // === Kanban Drag & Drop ===
+        let draggedId = null;
+
+        function onDragStart(e) {
+            draggedId = e.target.id;
+            e.dataTransfer.setData('text/plain', e.target.id);
+            e.target.classList.add('dragging');
+            setTimeout(() => e.target.style.display = 'block', 0);
+        }
+
+        function onDragOver(e) {
+            e.preventDefault();
+        }
+
+        function onDragEnter(e) {
+            e.preventDefault();
+            const col = e.currentTarget;
+            col.classList.add('drag-over');
+        }
+
+        function onDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function onDrop(e) {
+            e.preventDefault();
+            const col = e.currentTarget;
+            col.classList.remove('drag-over');
+
+            const id = e.dataTransfer.getData('text/plain');
+            const task = document.getElementById(id);
+            if (task) {
+                task.classList.remove('dragging');
+                // Insert before the counter div
+                const counter = col.querySelector('.counter');
+                col.insertBefore(task, counter);
+                atualizarContadores();
+            }
+        }
+
+        document.addEventListener('dragend', (e) => {
+            e.target.classList.remove('dragging');
+        });
+
+        function atualizarContadores() {
+            ['todo', 'doing', 'done'].forEach(id => {
+                const col = document.getElementById(id);
+                const count = col.querySelectorAll('.task').length;
+                document.getElementById('count-' + id).textContent = count + ' tarefa(s)';
+            });
+        }
+        atualizarContadores();
+
+        // === File Drop Zone ===
+        const dropZone = document.getElementById('dropZone');
+        const fileList = document.getElementById('fileList');
+
+        ['dragenter', 'dragover'].forEach(evt => {
+            dropZone.addEventListener(evt, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('active');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(evt => {
+            dropZone.addEventListener(evt, () => {
+                dropZone.classList.remove('active');
+            });
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            for (const file of files) {
+                const size = file.size < 1024 ? file.size + ' B'
+                    : file.size < 1048576 ? (file.size / 1024).toFixed(1) + ' KB'
+                    : (file.size / 1048576).toFixed(1) + ' MB';
+
+                fileList.innerHTML += `<div class="file-item">
+                    <span>📄 ${escapeHtml(file.name)}</span>
+                    <span class="file-size">${size}</span>
+                </div>`;
+            }
+        });
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(text));
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

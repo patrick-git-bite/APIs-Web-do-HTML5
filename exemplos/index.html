@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APIs Web do HTML5 — Exemplos Interativos</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        .header { text-align: center; margin-bottom: 2.5rem; }
+        .header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .header h1 span { background: linear-gradient(135deg, #4fc3f7, #ec407a); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .header p { color: #888; font-size: 0.95rem; }
+        .header .meta { color: #555; font-size: 0.8rem; margin-top: 0.5rem; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.25rem;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .api-card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 14px;
+            padding: 1.75rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .api-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            border-color: var(--accent);
+        }
+        .api-card .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .api-card .num { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-bottom: 0.25rem; font-weight: 700; }
+        .api-card h2 { font-size: 1.15rem; margin-bottom: 0.5rem; color: #fff; }
+        .api-card p { color: #888; font-size: 0.85rem; line-height: 1.5; flex: 1; }
+        .api-card .tags { margin-top: 0.75rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .api-card .tag { background: #111; border: 1px solid #333; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; color: #aaa; }
+        .api-card .arrow { text-align: right; color: var(--accent); font-size: 1.2rem; margin-top: 0.5rem; }
+
+        .footer { margin-top: 2.5rem; text-align: center; color: #444; font-size: 0.8rem; line-height: 1.8; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><span>APIs Web do HTML5</span></h1>
+        <p>Exemplos interativos prontos para execução e demonstração</p>
+        <div class="meta">
+            Centro Universitário Uniftec — ADS Caxias do Sul<br>
+            Programação Web — Prof. Juliano Menzon<br>
+            Patrick Brando &amp; Rafael Lima
+        </div>
+    </div>
+
+    <div class="grid">
+        <a class="api-card" href="01-geolocation.html" style="--accent: #4fc3f7;">
+            <div class="icon">📍</div>
+            <div class="num">API 01</div>
+            <h2>Geolocation</h2>
+            <p>Obtém a posição geográfica do usuário (latitude, longitude). Exibe no mapa com monitoramento em tempo real.</p>
+            <div class="tags">
+                <span class="tag">getCurrentPosition</span>
+                <span class="tag">watchPosition</span>
+                <span class="tag">GPS/Wi-Fi</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <a class="api-card" href="02-web-storage.html" style="--accent: #ab47bc;">
+            <div class="icon">💾</div>
+            <div class="num">API 02</div>
+            <h2>Web Storage</h2>
+            <p>Armazena dados no navegador. Compara localStorage (persistente) vs sessionStorage (temporário por aba).</p>
+            <div class="tags">
+                <span class="tag">localStorage</span>
+                <span class="tag">sessionStorage</span>
+                <span class="tag">setItem / getItem</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <a class="api-card" href="03-drag-and-drop.html" style="--accent: #ff7043;">
+            <div class="icon">🖱️</div>
+            <div class="num">API 03</div>
+            <h2>Drag and Drop</h2>
+            <p>Quadro Kanban interativo para arrastar tarefas entre colunas + zona de upload de arquivos por arrasto.</p>
+            <div class="tags">
+                <span class="tag">draggable</span>
+                <span class="tag">ondragstart</span>
+                <span class="tag">ondrop</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <a class="api-card" href="04-history-api.html" style="--accent: #42a5f5;">
+            <div class="icon">🔄</div>
+            <div class="num">API 04</div>
+            <h2>History API</h2>
+            <p>Simulação de SPA com navegação sem recarregamento. pushState, replaceState e popstate em ação.</p>
+            <div class="tags">
+                <span class="tag">pushState</span>
+                <span class="tag">replaceState</span>
+                <span class="tag">popstate</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <a class="api-card" href="05-notification.html" style="--accent: #ec407a;">
+            <div class="icon">🔔</div>
+            <div class="num">API 05</div>
+            <h2>Notification</h2>
+            <p>Envia notificações do SO direto do navegador. Permissão, personalização e exemplos prontos (e-mail, lembrete).</p>
+            <div class="tags">
+                <span class="tag">requestPermission</span>
+                <span class="tag">new Notification</span>
+                <span class="tag">onclick</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+        <a class="api-card" href="06-web-workers.html" style="--accent: #26c6da;">
+            <div class="icon">⚙️</div>
+            <div class="num">API 06</div>
+            <h2>Web Workers</h2>
+            <p>Compara cálculos na thread principal (trava) vs Worker (fluido). Fibonacci, primos e barra de progresso.</p>
+            <div class="tags">
+                <span class="tag">new Worker</span>
+                <span class="tag">postMessage</span>
+                <span class="tag">onmessage</span>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+    </div>
+
+    <div class="footer">
+        Seminário de Programação Web — Data de Entrega: 09/04/2026<br>
+        Abrir cada exemplo diretamente no navegador (recomendado via Live Server no VS Code)
+    </div>
+</body>
+</html>

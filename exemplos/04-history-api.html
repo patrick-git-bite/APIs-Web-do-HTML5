@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 4 - History API</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+        h1 { color: #42a5f5; margin-bottom: 0.5rem; }
+        p.desc { color: #aaa; margin-bottom: 1.5rem; text-align: center; max-width: 600px; }
+        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 2rem; width: 100%; max-width: 750px; margin-bottom: 1.5rem; }
+        a.voltar { color: #42a5f5; text-decoration: none; margin-bottom: 1rem; }
+        a.voltar:hover { text-decoration: underline; }
+
+        /* Navegação SPA */
+        .nav-bar { display: flex; gap: 0; border-radius: 10px; overflow: hidden; margin-bottom: 1.5rem; border: 1px solid #333; }
+        .nav-btn { flex: 1; padding: 0.75rem 1rem; text-align: center; background: #111; color: #aaa; border: none; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.2s; }
+        .nav-btn:hover { background: #1a2a3a; color: #fff; }
+        .nav-btn.active { background: #1565c0; color: #fff; }
+
+        .url-bar { background: #111; border: 1px solid #333; border-radius: 8px; padding: 0.6rem 1rem; font-family: monospace; font-size: 0.9rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .url-bar .lock { color: #66bb6a; }
+        .url-bar .url-text { color: #4fc3f7; }
+
+        .page-content { background: #111; border-radius: 10px; padding: 2rem; min-height: 200px; transition: opacity 0.3s; }
+        .page-content h2 { margin-bottom: 1rem; }
+        .page-content p { color: #bbb; line-height: 1.6; }
+
+        .history-log { background: #111; border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 0.8rem; max-height: 200px; overflow-y: auto; }
+        .log-entry { padding: 4px 0; border-bottom: 1px solid #1a1a1a; color: #aaa; }
+        .log-entry .time { color: #666; }
+        .log-entry .action { color: #ffa726; }
+        .log-entry .url { color: #4fc3f7; }
+
+        .controls { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .controls button { padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #333; background: #1e1e1e; color: #ccc; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+        .controls button:hover { background: #333; color: #fff; }
+    </style>
+</head>
+<body>
+    <a class="voltar" href="index.html">← Voltar ao índice</a>
+    <h1>🔄 History API</h1>
+    <p class="desc">Manipula o histórico de navegação sem recarregar a página. Essencial para SPAs (Single Page Applications).</p>
+
+    <!-- SPA Simulation -->
+    <div class="card">
+        <h2 style="color:#42a5f5; margin-bottom:1rem;">Simulação de SPA — Navegação sem recarregar</h2>
+
+        <div class="url-bar">
+            <span class="lock">🔒</span>
+            <span id="urlDisplay" class="url-text"></span>
+        </div>
+
+        <div class="nav-bar">
+            <button class="nav-btn active" onclick="navegar('home')">🏠 Home</button>
+            <button class="nav-btn" onclick="navegar('sobre')">👤 Sobre</button>
+            <button class="nav-btn" onclick="navegar('servicos')">⚙️ Serviços</button>
+            <button class="nav-btn" onclick="navegar('contato')">✉️ Contato</button>
+        </div>
+
+        <div class="controls">
+            <button onclick="history.back()">← Voltar</button>
+            <button onclick="history.forward()">Avançar →</button>
+            <button onclick="substituirEstado()">replaceState (alterar sem novo registro)</button>
+        </div>
+
+        <div class="page-content" id="pageContent">
+        </div>
+    </div>
+
+    <!-- Log do histórico -->
+    <div class="card">
+        <h2 style="color:#42a5f5; margin-bottom:1rem;">📜 Log de Navegação</h2>
+        <p style="color:#888; font-size:0.85rem; margin-bottom:0.75rem;">Cada ação registrada aqui mostra o que a History API fez nos bastidores.</p>
+        <div class="history-log" id="historyLog">
+            <div class="log-entry"><span class="time">[início]</span> <span class="action">Página carregada</span></div>
+        </div>
+    </div>
+
+    <!-- Código-fonte -->
+    <div class="card">
+        <h3 style="color:#42a5f5; margin-bottom:1rem;">Código-fonte</h3>
+        <pre style="background:#111; padding:1rem; border-radius:8px; overflow-x:auto; font-size:0.85rem; color:#ccc;">
+// Adiciona nova entrada no histórico (URL muda, página NÃO recarrega)
+history.pushState(
+  { pagina: "contato" },  // objeto de estado
+  "",                      // título (ignorado pela maioria)
+  "/contato"               // nova URL
+);
+
+// Substitui entrada atual (sem criar nova)
+history.replaceState(
+  { pagina: "sobre" },
+  "",
+  "/sobre"
+);
+
+// Detecta navegação com voltar/avançar
+window.addEventListener("popstate", (event) => {
+  console.log("Estado:", event.state);
+  // Atualizar a interface com base no estado
+});
+
+// Navegação manual
+history.back();     // Voltar
+history.forward();  // Avançar
+history.go(-2);     // Voltar 2 páginas
+        </pre>
+    </div>
+
+    <script>
+        const paginas = {
+            home: {
+                titulo: '🏠 Home',
+                cor: '#42a5f5',
+                conteudo: `<h2 style="color:#42a5f5">Bem-vindo ao nosso site!</h2>
+                    <p>Esta é a página inicial da nossa SPA (Single Page Application).</p>
+                    <p>Navegue pelas seções usando os botões acima. Observe que a URL muda na barra de endereços, mas a página <strong>não recarrega</strong>!</p>
+                    <p>Use os botões do navegador (voltar/avançar) — eles também funcionam graças à History API.</p>`
+            },
+            sobre: {
+                titulo: '👤 Sobre',
+                cor: '#66bb6a',
+                conteudo: `<h2 style="color:#66bb6a">Sobre Nós</h2>
+                    <p>Somos Patrick Brando e Rafael Lima, estudantes de ADS na Uniftec Caxias do Sul.</p>
+                    <p>Este projeto demonstra como a <strong>History API</strong> permite criar navegação fluida sem recarregar a página.</p>`
+            },
+            servicos: {
+                titulo: '⚙️ Serviços',
+                cor: '#ffa726',
+                conteudo: `<h2 style="color:#ffa726">Nossos Serviços</h2>
+                    <p>Oferecemos demonstrações interativas das APIs do HTML5:</p>
+                    <ul style="margin:1rem 0 0 1.5rem; color:#bbb; line-height:2;">
+                        <li>Geolocation API</li>
+                        <li>Web Storage API</li>
+                        <li>Drag and Drop API</li>
+                        <li>History API (você está vendo!)</li>
+                        <li>Notification API</li>
+                        <li>Web Workers API</li>
+                    </ul>`
+            },
+            contato: {
+                titulo: '✉️ Contato',
+                cor: '#ef5350',
+                conteudo: `<h2 style="color:#ef5350">Entre em Contato</h2>
+                    <p>Este é apenas um exemplo demonstrativo, mas imagine um formulário aqui!</p>
+                    <div style="background:#1a1a1a; padding:1rem; border-radius:8px; margin-top:1rem;">
+                        <p style="color:#666;">📧 email@exemplo.com</p>
+                        <p style="color:#666;">📱 (54) 99999-9999</p>
+                    </div>`
+            }
+        };
+
+        let paginaAtual = 'home';
+
+        function navegar(pagina, addToHistory = true) {
+            if (!paginas[pagina]) return;
+
+            paginaAtual = pagina;
+            const dados = paginas[pagina];
+
+            // Atualiza conteúdo
+            document.getElementById('pageContent').innerHTML = dados.conteudo;
+
+            // Atualiza URL display
+            document.getElementById('urlDisplay').textContent = window.location.origin + '/' + pagina;
+
+            // Atualiza botões ativos
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            const btns = document.querySelectorAll('.nav-btn');
+            const idx = ['home', 'sobre', 'servicos', 'contato'].indexOf(pagina);
+            if (idx >= 0) btns[idx].classList.add('active');
+
+            // Adiciona ao histórico
+            if (addToHistory) {
+                history.pushState({ pagina }, '', '#/' + pagina);
+                addLog('pushState', '/' + pagina);
+            }
+        }
+
+        function substituirEstado() {
+            const novaRota = paginaAtual + '-v2';
+            history.replaceState({ pagina: paginaAtual }, '', '#/' + novaRota);
+            document.getElementById('urlDisplay').textContent = window.location.origin + '/' + novaRota;
+            addLog('replaceState', '/' + novaRota);
+        }
+
+        // Detecta voltar/avançar do navegador
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.pagina) {
+                navegar(event.state.pagina, false);
+                addLog('popstate (voltar/avançar)', '/' + event.state.pagina);
+            }
+        });
+
+        function addLog(action, url) {
+            const log = document.getElementById('historyLog');
+            const now = new Date().toLocaleTimeString('pt-BR');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="time">[${now}]</span> <span class="action">${action}</span> → <span class="url">${url}</span>`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Inicializar
+        history.replaceState({ pagina: 'home' }, '', '#/home');
+        navegar('home', false);
+        document.getElementById('urlDisplay').textContent = window.location.origin + '/home';
+    </script>
+</body>
+</html>

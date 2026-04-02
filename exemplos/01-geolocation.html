@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 1 - Geolocation</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+        h1 { color: #4fc3f7; margin-bottom: 0.5rem; }
+        p.desc { color: #aaa; margin-bottom: 1.5rem; text-align: center; max-width: 600px; }
+        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 2rem; width: 100%; max-width: 700px; margin-bottom: 1.5rem; }
+        button { background: #4fc3f7; color: #000; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 1rem; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+        button:hover { background: #039be5; }
+        button:disabled { background: #555; color: #999; cursor: not-allowed; }
+        #resultado { margin-top: 1rem; padding: 1rem; background: #111; border-radius: 8px; font-family: monospace; white-space: pre-wrap; min-height: 60px; }
+        #mapa { width: 100%; height: 350px; border-radius: 8px; border: 1px solid #333; margin-top: 1rem; display: none; }
+        .status { color: #fdd835; font-style: italic; }
+        .erro { color: #ef5350; }
+        .ok { color: #66bb6a; }
+        a.voltar { color: #4fc3f7; text-decoration: none; margin-bottom: 1rem; }
+        a.voltar:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <a class="voltar" href="index.html">← Voltar ao índice</a>
+    <h1>📍 Geolocation API</h1>
+    <p class="desc">Permite obter a posição geográfica do usuário (latitude e longitude) via GPS, Wi-Fi ou IP. O navegador sempre pede permissão antes.</p>
+
+    <div class="card">
+        <button id="btnLocal" onclick="obterLocalizacao()">Obter Minha Localização</button>
+        <button id="btnWatch" onclick="monitorarLocalizacao()" style="margin-left: 0.5rem;">Monitorar Posição</button>
+        <button id="btnStop" onclick="pararMonitoramento()" style="margin-left: 0.5rem;" disabled>Parar</button>
+        <div id="resultado"><span class="status">Aguardando ação...</span></div>
+        <iframe id="mapa" title="Mapa"></iframe>
+    </div>
+
+    <div class="card">
+        <h3 style="color:#4fc3f7; margin-bottom:1rem;">Código-fonte</h3>
+        <pre style="background:#111; padding:1rem; border-radius:8px; overflow-x:auto; font-size:0.85rem; color:#ccc;">
+// Obter localização atual
+navigator.geolocation.getCurrentPosition(
+  (pos) => {
+    console.log("Latitude:", pos.coords.latitude);
+    console.log("Longitude:", pos.coords.longitude);
+    console.log("Precisão:", pos.coords.accuracy, "metros");
+  },
+  (erro) => {
+    console.error("Erro:", erro.message);
+  }
+);
+
+// Monitorar mudanças na posição
+const watchId = navigator.geolocation.watchPosition(callback);
+
+// Parar monitoramento
+navigator.geolocation.clearWatch(watchId);
+        </pre>
+    </div>
+
+    <script>
+        let watchId = null;
+
+        function obterLocalizacao() {
+            const res = document.getElementById('resultado');
+            const btn = document.getElementById('btnLocal');
+            btn.disabled = true;
+            res.innerHTML = '<span class="status">Solicitando permissão ao navegador...</span>';
+
+            if (!navigator.geolocation) {
+                res.innerHTML = '<span class="erro">Geolocation não é suportada neste navegador.</span>';
+                btn.disabled = false;
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (posicao) => {
+                    const lat = posicao.coords.latitude;
+                    const lon = posicao.coords.longitude;
+                    const precisao = posicao.coords.accuracy;
+
+                    res.innerHTML =
+                        `<span class="ok">✔ Localização obtida com sucesso!</span>\n\n` +
+                        `Latitude:  ${lat}\n` +
+                        `Longitude: ${lon}\n` +
+                        `Precisão:  ${precisao.toFixed(0)} metros\n` +
+                        `Timestamp: ${new Date(posicao.timestamp).toLocaleString('pt-BR')}`;
+
+                    mostrarMapa(lat, lon);
+                    btn.disabled = false;
+                },
+                (erro) => {
+                    const msgs = {
+                        1: "Permissão negada pelo usuário.",
+                        2: "Posição indisponível.",
+                        3: "Tempo de requisição esgotado."
+                    };
+                    res.innerHTML = `<span class="erro">✘ Erro: ${msgs[erro.code] || erro.message}</span>`;
+                    btn.disabled = false;
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+
+        function monitorarLocalizacao() {
+            const res = document.getElementById('resultado');
+            document.getElementById('btnWatch').disabled = true;
+            document.getElementById('btnStop').disabled = false;
+            let count = 0;
+
+            res.innerHTML = '<span class="status">Monitorando posição em tempo real...</span>';
+
+            watchId = navigator.geolocation.watchPosition(
+                (posicao) => {
+                    count++;
+                    const lat = posicao.coords.latitude;
+                    const lon = posicao.coords.longitude;
+                    res.innerHTML =
+                        `<span class="ok">📡 Atualização #${count}</span>\n\n` +
+                        `Latitude:  ${lat}\n` +
+                        `Longitude: ${lon}\n` +
+                        `Hora: ${new Date(posicao.timestamp).toLocaleTimeString('pt-BR')}`;
+                    mostrarMapa(lat, lon);
+                },
+                (erro) => {
+                    res.innerHTML = `<span class="erro">Erro no monitoramento: ${erro.message}</span>`;
+                    pararMonitoramento();
+                }
+            );
+        }
+
+        function pararMonitoramento() {
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            document.getElementById('btnWatch').disabled = false;
+            document.getElementById('btnStop').disabled = true;
+            document.getElementById('resultado').innerHTML += '\n\n<span class="status">Monitoramento encerrado.</span>';
+        }
+
+        function mostrarMapa(lat, lon) {
+            const mapa = document.getElementById('mapa');
+            mapa.style.display = 'block';
+            mapa.src = `https://www.openstreetmap.org/export/embed.html?bbox=${lon-0.01},${lat-0.01},${lon+0.01},${lat+0.01}&layer=mapnik&marker=${lat},${lon}`;
+        }
+    </script>
+</body>
+</html>
