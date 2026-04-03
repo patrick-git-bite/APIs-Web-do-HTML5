@@ -1,86 +1,260 @@
 # Relatório de Seminário: APIs Web do HTML5
 
-**Centro Universitário Uniftec - ADS Caxias do Sul**
-
-**Disciplina:** Programação Web
-
-**Docente:** Juliano Menzon
-**Discentes:** Patrick Brando e Rafael Lima**
-Data de Entrega:** 09/04/2026
+> **Centro Universitário Uniftec — ADS Caxias do Sul**
+> **Disciplina:** Programação Web
+> **Docente:** Juliano Menzon
+> **Discentes:** Patrick Brando, Rafael Lima e Pedro
+> **Data de Entrega:** 09/04/2026
 
 ---
 
 ## 1. Introdução
 
-Este relatório apresenta o conteúdo técnico explorado no seminário sobre as APIs nativas do HTML5, destacando como essas interfaces de programação permitem a criação de aplicações web mais ricas, performáticas e interativas. O foco do trabalho recai sobre seis APIs fundamentais: Geolocation, Web Storage, Drag and Drop, History, Notification e Web Workers.
+### O que são APIs?
+
+Antes de tudo, precisamos entender o que é uma **API** (Application Programming Interface, ou Interface de Programação de Aplicações). De forma simples, uma API é um **conjunto de ferramentas prontas** que o navegador disponibiliza para que os desenvolvedores utilizem funcionalidades avançadas sem precisar construí-las do zero.
+
+**Analogia:** Pense no navegador como um smartphone. Ele já vem com câmera, GPS, alto-falante, etc. As APIs são como os "botões" que permitem que um aplicativo use essas funções. Você não precisa saber como o GPS funciona por dentro — basta pedir a localização, e a API entrega o resultado.
+
+### O que vamos apresentar?
+
+Neste seminário, exploramos **6 APIs nativas do HTML5** — funcionalidades que já vêm embutidas nos navegadores modernos (Chrome, Firefox, Edge, etc.) e que tornam os sites mais inteligentes e interativos:
+
+| # | API | Para que serve (em uma frase) |
+|---|-----|-------------------------------|
+| 1 | **Geolocation** | Descobre onde o usuário está no mapa |
+| 2 | **Web Storage** | Salva informações no navegador do usuário |
+| 3 | **Drag and Drop** | Permite arrastar e soltar elementos na tela |
+| 4 | **History** | Muda a página sem recarregar o site |
+| 5 | **Notification** | Envia alertas no computador/celular do usuário |
+| 6 | **Web Workers** | Faz cálculos pesados sem travar a tela |
 
 ---
 
-## 2. APIs Web do HTML5: Conceitos e Exemplos Práticos
-
-### 2.1. Geolocation API
-
-A **Geolocation API** é uma funcionalidade do HTML5 que permite às aplicações web obterem a posição geográfica do usuário. Essa localização pode ser determinada por meio de diversas fontes, como GPS, redes Wi-Fi ou endereços IP. É crucial ressaltar que, por questões de segurança e privacidade, o navegador sempre solicita permissão explícita ao usuário antes de compartilhar suas coordenadas de latitude e longitude [1].
-
-Os métodos principais para interagir com esta API incluem `navigator.geolocation.getCurrentPosition()`, que obtém a localização atual do dispositivo, e `watchPosition()`, que monitora as mudanças na posição do usuário ao longo do tempo. Um exemplo prático de sua aplicação seria a exibição da localização do usuário em um mapa interativo ou a entrega de conteúdo específico baseado na sua proximidade geográfica [2].
-
-### 2.2. Web Storage (localStorage e sessionStorage)
-
-O **Web Storage** oferece um mecanismo robusto para o armazenamento de dados no lado do cliente, superando as limitações dos cookies em termos de capacidade e segurança. Essa API é dividida em duas interfaces principais, cada uma com características distintas de persistência [3]:
-
-1. **`localStorage`****:** Permite o armazenamento de dados de forma persistente. As informações salvas no `localStorage` permanecem disponíveis mesmo após o navegador ser fechado e reaberto, não possuindo um tempo de expiração definido. É ideal para guardar preferências de usuário, como temas de interface (dark mode) ou tokens de autenticação que precisam ser mantidos entre sessões.
-
-1. **`sessionStorage`****:** Armazena dados apenas durante a sessão atual da aba ou janela do navegador. Assim que a aba é fechada, todos os dados armazenados no `sessionStorage` são automaticamente removidos. É frequentemente utilizado para dados temporários, como informações preenchidas em formulários de múltiplas etapas ou estados de navegação específicos de uma sessão [4].
-
-Ambas as interfaces utilizam métodos como `setItem(key, value)` para adicionar dados, `getItem(key)` para recuperá-los, `removeItem(key)` para excluir um item específico e `clear()` para remover todos os dados armazenados [3].
-
-### 2.3. Drag and Drop API
-
-A **Drag and Drop API** do HTML5 introduziu um suporte nativo e simplificado para a funcionalidade de arrastar e soltar elementos em páginas web. Anteriormente, a implementação dessa interatividade exigia o uso de bibliotecas JavaScript complexas. Com o HTML5, basta definir o atributo `draggable="true"` em qualquer elemento HTML para torná-lo arrastável [5].
-
-O processo de arrastar e soltar é gerenciado por uma série de eventos, incluindo `ondragstart` (disparado quando o arrasto começa), `ondragover` (ativado quando um elemento arrastado está sobre uma área de destino potencial) e `ondrop` (ocorre quando o elemento é solto no destino). Aplicações comuns incluem a organização de itens em listas, a movimentação de cards em quadros de gerenciamento de tarefas (como Kanban) ou o upload de arquivos diretamente para uma área designada [5].
-
-### 2.4. History API
-
-A **History API** confere aos desenvolvedores a capacidade de manipular o histórico de navegação da sessão do navegador de forma programática. Essa funcionalidade é fundamental para o desenvolvimento de Single Page Applications (SPAs), onde o conteúdo da página é atualizado dinamicamente via JavaScript sem a necessidade de um recarregamento completo da página. A API permite que a URL na barra de endereços seja alterada para refletir o estado atual da aplicação, mantendo a funcionalidade dos botões denavegação (voltar/avançar) do navegador [6].
-
-Os métodos mais utilizados são `history.pushState()`, que adiciona uma nova entrada ao histórico de sessão, e `history.replaceState()`, que modifica a entrada atual do histórico sem criar uma nova. O evento `popstate` é disparado quando o histórico de sessão muda, permitindo que a aplicação reaja a essas alterações [6].
-
-### 2.5. Notification API
-
-A **Notification API** permite que aplicações web enviem notificações que são exibidas fora do contexto da página, diretamente no sistema operacional do usuário. Isso possibilita um maior engajamento e a entrega de informações importantes mesmo quando a página não está em foco [7].
-
-O processo de uso envolve primeiramente a solicitação de permissão ao usuário por meio de `Notification.requestPermission()`. Uma vez concedida a permissão, as notificações podem ser criadas utilizando o construtor `new Notification("Título da Notificação", { body: "Corpo da mensagem", icon: "url_do_icone" })`. Exemplos de uso incluem alertas de novas mensagens, lembretes de calendário ou atualizações de status em tempo real [7].
-
-### 2.6. Web Workers API
-
-A **Web Workers API** é uma solução para o problema de scripts JavaScript que executam tarefas computacionalmente intensivas e podem bloquear a thread principal do navegador, resultando em uma interface de usuário travada e não responsiva. Com os Web Workers, é possível executar scripts em threads separadas em segundo plano, garantindo que a interface do usuário permaneça fluida e responsiva [8].
-
-A comunicação entre a thread principal e o Web Worker é realizada por meio de mensagens, utilizando o método `postMessage()` para enviar dados e o evento `onmessage` para recebê-los. Essa arquitetura é ideal para operações como processamento de grandes volumes de dados, cálculos matemáticos complexos, compressão de arquivos ou qualquer tarefa que exija tempo de processamento significativo sem impactar a experiência do usuário [8].
+## 2. As 6 APIs explicadas
 
 ---
 
-## 3. Conclusão
+### 2.1. 📍 Geolocation API — "Onde você está?"
 
-As APIs do HTML5 representam um avanço fundamental na capacidade das aplicações web, transformando o navegador de um mero visualizador de documentos em uma plataforma poderosa e interativa. A Geolocation API oferece consciência espacial, o Web Storage proporciona persistência de dados aprimorada, a Drag and Drop API eleva a interatividade, a History API otimiza a navegação em SPAs, a Notification API melhora o engajamento do usuário e os Web Workers garantem a responsividade da interface. O domínio dessas ferramentas é indispensável para profissionais de Análise e Desenvolvimento de Sistemas que buscam construir soluções web modernas, eficientes e com uma excelente experiência de usuário.
+**O que faz?**
+Permite que um site descubra a **localização geográfica** do usuário (latitude e longitude), usando GPS, Wi-Fi ou o endereço de IP.
+
+**Importante:** O navegador **sempre pede permissão** antes — aparece aquele popup "Este site deseja saber sua localização". Nenhum site pode rastrear você sem que você aceite [1].
+
+**Como funciona na prática?**
+
+| Passo | O que acontece |
+|-------|----------------|
+| 1 | O site chama `navigator.geolocation.getCurrentPosition()` |
+| 2 | O navegador mostra o popup pedindo permissão |
+| 3 | Se o usuário aceitar, o navegador retorna latitude e longitude |
+| 4 | O site pode usar essas coordenadas (ex: mostrar no mapa) |
+
+**Onde vemos isso no dia a dia?**
+- Google Maps perguntando "Usar sua localização?"
+- iFood mostrando restaurantes perto de você
+- Apps de clima detectando sua cidade automaticamente
+
+**Métodos principais:**
+
+| Método | O que faz |
+|--------|-----------|
+| `getCurrentPosition()` | Pega a localização **uma vez** |
+| `watchPosition()` | Fica **monitorando** a posição (útil para GPS em tempo real) |
+| `clearWatch()` | Para de monitorar |
+
+> **Referências:** [1] [2]
 
 ---
 
-## 4. Referências
+### 2.2. 💾 Web Storage — "Salvar dados no navegador"
 
-[1]: # "Mozilla Developer Network (MDN). Geolocation API. Disponível em: [https://developer.mozilla.org/en-US/docs/Web/API/GeolocationAPI](https://developer.mozilla.org/en-US/docs/Web/API/GeolocationAPI ). Acesso em: 27 mar. 2026."
+**O que faz?**
+Permite que o site **guarde informações diretamente no navegador** do usuário, sem precisar de um servidor ou banco de dados. É como um "caderninho de anotações" que o navegador mantém para cada site.
 
-[2]: # "W3Schools. HTML Geolocation. Disponível em: [https://www.w3schools.com/html/html5geolocation.asp](https://www.w3schools.com/html/html5geolocation.asp ). Acesso em: 27 mar. 2026."
+**Por que não usar cookies?**
+Cookies existem há muito tempo, mas têm limitações: armazenam pouca informação (4KB) e são enviados ao servidor a cada clique. O Web Storage resolve isso — armazena até **5MB** e fica só no navegador [3].
 
-[3]: # "Mozilla Developer Network (MDN). Web Storage API. Disponível em: [https://developer.mozilla.org/en-US/docs/Web/API/WebStorageAPI](https://developer.mozilla.org/en-US/docs/Web/API/WebStorageAPI ). Acesso em: 27 mar. 2026."
+**Os dois tipos:**
 
-[4]: # "Stack Overflow. What is the difference between localStorage, sessionStorage, session and cookies?. Disponível em: [https://stackoverflow.com/questions/19867599/what-is-the-difference-between-localstorage-sessionstorage-session-and-cookies](https://stackoverflow.com/questions/19867599/what-is-the-difference-between-localstorage-sessionstorage-session-and-cookies ). Acesso em: 27 mar. 2026."
+| Tipo | Quanto dura? | Exemplo de uso |
+|------|-------------|----------------|
+| **localStorage** | **Para sempre** (até o usuário limpar) | Salvar se o usuário prefere tema escuro |
+| **sessionStorage** | **Só enquanto a aba estiver aberta** | Guardar dados de um formulário de várias etapas |
 
-[5]: # "W3Schools. HTML Drag and Drop API. Disponível em: [https://www.w3schools.com/html/html5draganddrop.asp](https://www.w3schools.com/html/html5draganddrop.asp ). Acesso em: 27 mar. 2026."
+**Analogia:**
+- **localStorage** = Escrever com caneta. Fica lá até você apagar.
+- **sessionStorage** = Escrever no quadro branco. Quando fecha a sala (aba), apaga.
 
-[6]: # "Mozilla Developer Network (MDN). History API. Disponível em: [https://developer.mozilla.org/pt-BR/docs/Web/API/HistoryAPI](https://developer.mozilla.org/pt-BR/docs/Web/API/HistoryAPI ). Acesso em: 27 mar. 2026."
+**Como usar (é simples!):**
 
-[7]: # "Mozilla Developer Network (MDN). Notifications API. Disponível em: [https://developer.mozilla.org/en-US/docs/Web/API/NotificationsAPI](https://developer.mozilla.org/en-US/docs/Web/API/NotificationsAPI ). Acesso em: 27 mar. 2026."
+| Ação | Comando | Exemplo |
+|------|---------|---------|
+| Salvar | `setItem(chave, valor)` | `localStorage.setItem("nome", "Patrick")` |
+| Buscar | `getItem(chave)` | `localStorage.getItem("nome")` → "Patrick" |
+| Remover | `removeItem(chave)` | `localStorage.removeItem("nome")` |
+| Limpar tudo | `clear()` | `localStorage.clear()` |
 
-[8]: # "Mozilla Developer Network (MDN). Web Workers API. Disponível em: [https://developer.mozilla.org/en-US/docs/Web/API/WebWorkersAPI](https://developer.mozilla.org/en-US/docs/Web/API/WebWorkersAPI ). Acesso em: 27 mar. 2026."
+**Onde vemos isso no dia a dia?**
+- Sites que lembram seu tema (claro/escuro) mesmo depois de fechar
+- Carrinhos de compra que mantêm os produtos
+- Formulários que não perdem os dados se você atualizar a página
+
+> **Referências:** [3] [4]
+
+---
+
+### 2.3. 🖱️ Drag and Drop — "Arrastar e soltar"
+
+**O que faz?**
+Permite que o usuário **arraste elementos pela tela e solte em outro lugar**, como mover um card de "A Fazer" para "Feito" em um quadro de tarefas.
+
+Antes do HTML5, isso era muito difícil de fazer. Agora, basta adicionar `draggable="true"` em qualquer elemento [5].
+
+**Como funciona (passo a passo):**
+
+| Evento | Quando dispara | O que acontece |
+|--------|---------------|----------------|
+| `ondragstart` | Usuário **começa** a arrastar | O navegador "pega" o elemento |
+| `ondragover` | Elemento está **sobre** uma área de destino | Precisamos dizer ao navegador "pode soltar aqui" |
+| `ondrop` | Usuário **solta** o elemento | O elemento é movido para o novo local |
+
+**Analogia:** É como arrastar um arquivo da pasta "Downloads" para a "Área de Trabalho" no seu computador — só que dentro de uma página web.
+
+**Onde vemos isso no dia a dia?**
+- Trello / Notion — mover cards entre colunas
+- Google Drive — arrastar arquivos para fazer upload
+- Reordenar playlists no Spotify
+
+> **Referência:** [5]
+
+---
+
+### 2.4. 🔄 History API — "Mudar a página sem recarregar"
+
+**O que faz?**
+Permite que o desenvolvedor **mude o endereço (URL) na barra do navegador** e o conteúdo da página **sem recarregar tudo do zero**. Isso torna a navegação muito mais rápida e fluida [6].
+
+**Por que isso é importante?**
+Sites modernos como Gmail, Instagram e YouTube são chamados de **SPAs** (Single Page Applications). Quando você clica em uma nova seção, a página **não recarrega** — só o conteúdo muda. Isso é possível graças à History API.
+
+**Os dois métodos principais:**
+
+| Método | O que faz |
+|--------|-----------|
+| `pushState()` | **Adiciona** uma nova entrada no histórico (como se fosse uma nova página) |
+| `replaceState()` | **Substitui** a entrada atual (não cria registro novo) |
+
+**E o botão "Voltar" do navegador?**
+Funciona normalmente! Quando o usuário clica em "Voltar", o evento `popstate` é disparado, e o site pode reagir mostrando o conteúdo anterior.
+
+**Analogia:** Imagine um livro onde você pode trocar o conteúdo das páginas sem arrancar nenhuma folha. O índice (URL) muda, o conteúdo muda, mas o livro (página) continua o mesmo.
+
+**Onde vemos isso no dia a dia?**
+- YouTube — a URL muda ao clicar em um vídeo, mas a página não recarrega
+- Gmail — navegar entre Caixa de Entrada e Enviados
+- Qualquer site que parece "instantâneo" ao trocar de seção
+
+> **Referência:** [6]
+
+---
+
+### 2.5. 🔔 Notification API — "Alertas fora do navegador"
+
+**O que faz?**
+Permite que um site envie **notificações diretamente no sistema operacional** do usuário — aquelas que aparecem no canto da tela, mesmo que o site esteja minimizado [7].
+
+**Passo a passo:**
+
+| Passo | O que acontece |
+|-------|----------------|
+| 1 | O site chama `Notification.requestPermission()` |
+| 2 | O navegador pergunta: "Permitir notificações deste site?" |
+| 3 | Se o usuário aceitar, o site pode enviar notificações |
+| 4 | A notificação aparece no sistema (fora do navegador) |
+
+**Três estados de permissão:**
+
+| Estado | Significado |
+|--------|-------------|
+| `granted` | ✅ Permitido — pode enviar notificações |
+| `denied` | ❌ Negado — não pode enviar |
+| `default` | ⏳ Ainda não decidiu |
+
+**Onde vemos isso no dia a dia?**
+- WhatsApp Web — "Você recebeu uma nova mensagem"
+- Google Calendar — lembretes de reunião
+- Sites de e-commerce — "Seu pedido foi enviado!"
+
+> **Referência:** [7]
+
+---
+
+### 2.6. ⚙️ Web Workers — "Trabalho pesado sem travar a tela"
+
+**O que faz?**
+Permite executar **tarefas pesadas em segundo plano**, sem que a interface do site fique travada ou lenta [8].
+
+**Por que isso é necessário?**
+O JavaScript normalmente roda em uma única "fila" (thread). Se você pedir para ele fazer um cálculo demorado, **tudo para** — botões não clicam, animações congelam, a página trava. O Web Worker resolve isso criando uma **fila separada** que trabalha em paralelo.
+
+**Analogia:** Imagine um restaurante com **um único garçom** (thread principal). Se ele for cozinhar um prato demorado, ninguém mais é atendido. O Web Worker é como **contratar um cozinheiro** — o garçom continua atendendo enquanto o cozinheiro prepara o prato nos fundos.
+
+**Como funciona:**
+
+| Passo | O que acontece |
+|-------|----------------|
+| 1 | A página cria um Worker: `new Worker("worker.js")` |
+| 2 | Envia uma tarefa: `worker.postMessage(dados)` |
+| 3 | O Worker processa em segundo plano (sem travar a tela) |
+| 4 | Quando termina, avisa a página: `self.postMessage(resultado)` |
+
+**Onde vemos isso no dia a dia?**
+- Google Docs — verificação ortográfica enquanto você digita
+- Sites de edição de fotos — aplicar filtros sem travar
+- Planilhas online — cálculos complexos rodando em background
+
+> **Referência:** [8]
+
+---
+
+## 3. Resumo Visual
+
+| API | Emoji | Pergunta que responde | Exemplo do dia a dia |
+|-----|-------|----------------------|----------------------|
+| Geolocation | 📍 | "Onde estou?" | iFood achando restaurantes perto |
+| Web Storage | 💾 | "Como salvar dados no navegador?" | Site lembrando seu tema escuro |
+| Drag and Drop | 🖱️ | "Como arrastar coisas na tela?" | Mover cards no Trello |
+| History | 🔄 | "Como mudar de página sem recarregar?" | YouTube trocando de vídeo |
+| Notification | 🔔 | "Como enviar alertas no PC/celular?" | WhatsApp Web avisando nova mensagem |
+| Web Workers | ⚙️ | "Como fazer algo pesado sem travar?" | Google Docs corrigindo ortografia |
+
+---
+
+## 4. Conclusão
+
+As APIs do HTML5 transformaram o navegador em uma plataforma poderosa. Antes, sites eram apenas páginas estáticas — hoje, com essas ferramentas, conseguimos criar aplicações completas que sabem onde você está, salvam suas preferências, respondem ao toque, navegam sem recarregar, enviam alertas e processam dados pesados sem travar.
+
+O mais importante: **todas essas funcionalidades já vêm prontas no navegador**. Não precisamos instalar nada extra — basta aprender a usá-las. Para quem está começando na área de desenvolvimento, dominar essas APIs é um passo essencial para criar sites modernos e com boa experiência para o usuário.
+
+---
+
+## 5. Referências
+
+[1]: # "Mozilla Developer Network (MDN). Geolocation API. Disponível em: https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API. Acesso em: 27 mar. 2026."
+
+[2]: # "W3Schools. HTML Geolocation. Disponível em: https://www.w3schools.com/html/html5_geolocation.asp. Acesso em: 27 mar. 2026."
+
+[3]: # "Mozilla Developer Network (MDN). Web Storage API. Disponível em: https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API. Acesso em: 27 mar. 2026."
+
+[4]: # "Stack Overflow. What is the difference between localStorage, sessionStorage, session and cookies?. Disponível em: https://stackoverflow.com/questions/19867599. Acesso em: 27 mar. 2026."
+
+[5]: # "W3Schools. HTML Drag and Drop API. Disponível em: https://www.w3schools.com/html/html5_draganddrop.asp. Acesso em: 27 mar. 2026."
+
+[6]: # "Mozilla Developer Network (MDN). History API. Disponível em: https://developer.mozilla.org/pt-BR/docs/Web/API/History_API. Acesso em: 27 mar. 2026."
+
+[7]: # "Mozilla Developer Network (MDN). Notifications API. Disponível em: https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API. Acesso em: 27 mar. 2026."
+
+[8]: # "Mozilla Developer Network (MDN). Web Workers API. Disponível em: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API. Acesso em: 27 mar. 2026."
 

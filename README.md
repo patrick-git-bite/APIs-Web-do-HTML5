@@ -75,6 +75,7 @@ A página índice lista todas as 6 APIs com links para cada exemplo.
 
 - **Patrick Brando**
 - **Rafael Lima**
+- **Pedro**
 
 Centro Universitário Uniftec — ADS Caxias do Sul  
 Disciplina: Programação Web — Prof. Juliano Menzon
